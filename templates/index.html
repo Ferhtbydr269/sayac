@@ -48,6 +48,55 @@
             margin: 0;
         }
         
+        .office-hours-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px 20px;
+            text-align: center;
+            border-bottom: 1px solid #ffeaa7;
+            font-weight: 600;
+        }
+        
+        .office-hours-notice.closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .flash-messages {
+            padding: 10px 20px;
+        }
+        
+        .flash {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .flash.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .flash.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .add-user-section {
             padding: 20px;
             background: #f8f9fa;
@@ -91,12 +140,18 @@
             white-space: nowrap;
         }
         
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
         .btn-primary {
             background: #667eea;
             color: white;
         }
         
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #5a6fd8;
             transform: translateY(-1px);
         }
@@ -106,7 +161,7 @@
             color: white;
         }
         
-        .btn-danger:hover {
+        .btn-danger:hover:not(:disabled) {
             background: #c0392b;
         }
         
@@ -115,8 +170,19 @@
             color: white;
         }
         
-        .btn-warning:hover {
+        .btn-warning:hover:not(:disabled) {
             background: #e67e22;
+        }
+        
+        .btn-stats {
+            background: #27ae60;
+            color: white;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        
+        .btn-stats:hover {
+            background: #229954;
         }
         
         .users-section {
@@ -157,6 +223,24 @@
             flex-wrap: wrap;
             gap: 8px;
             align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         
         .user-actions {
@@ -199,6 +283,17 @@
             border-radius: 12px;
             font-size: 0.8rem;
             font-weight: 600;
+        }
+        
+        /* Küfür animasyonu */
+        .curse-animation {
+            animation: curseShake 0.6s ease-in-out;
+        }
+        
+        @keyframes curseShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
         /* Mobil optimizasyonları */
@@ -296,6 +391,24 @@
             <p>Her küfür 10 TL! Kim daha çok küfür ediyor?</p>
         </div>
         
+        <div class="office-hours-notice {% if not is_office_hours %}closed{% endif %}">
+            {% if is_office_hours %}
+                ✅ Ofis saatleri aktif (09:00-21:00)
+            {% else %}
+                ❌ Ofis saatleri dışında (09:00-21:00)
+            {% endif %}
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
         <div class="add-user-section">
             <form class="add-user-form" method="POST" action="{{ url_for('kullanici_ekle') }}">
                 <input type="text" name="isim" placeholder="Kullanıcı adını girin..." required>
@@ -304,20 +417,44 @@
         </div>
         
         <div class="users-section">
+            <a href="{{ url_for('stats') }}" class="btn btn-stats">📊 İstatistikler</a>
+            
             {% if kullanicilar %}
                 {% for kullanici in kullanicilar %}
                 <div class="user-card">
                     <div class="user-info">
-                        <div class="user-name">{{ kullanici[1] }}</div>
+                        <div class="user-name">{{ kullanici.data[1] }}</div>
                         <div class="user-stats">
-                            <span>Küfür: <span class="count-badge">{{ kullanici[2] }}</span></span>
-                            <span>Borç: <span class="money-amount">{{ kullanici[3] }} TL</span></span>
+                            <span>Küfür: <span class="count-badge">{{ kullanici.data[2] }}</span></span>
+                            <span>Borç: <span class="money-amount">{{ kullanici.data[3] }} TL</span></span>
                         </div>
+                        
+                        {% if kullanici.badges %}
+                        <div class="badges">
+                            {% for badge in kullanici.badges %}
+                            <div class="badge" style="background-color: {{ badge.color }}; color: white;">
+                                {{ badge.icon }} {{ badge.name }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="user-actions">
-                        <a href="{{ url_for('kufur_ekle', kullanici_id=kullanici[0]) }}" class="btn btn-danger">+1 Küfür</a>
-                        <a href="{{ url_for('kufur_azalt', kullanici_id=kullanici[0]) }}" class="btn btn-warning">-1 Küfür</a>
-                        <a href="{{ url_for('kullanici_sil', kullanici_id=kullanici[0]) }}" class="btn btn-danger" onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">Sil</a>
+                        <a href="{{ url_for('kufur_ekle', kullanici_id=kullanici.data[0]) }}" 
+                           class="btn btn-danger {% if not is_office_hours %}disabled{% endif %}"
+                           onclick="return addCurse(this)">
+                            +1 Küfür
+                        </a>
+                        <a href="{{ url_for('kufur_azalt', kullanici_id=kullanici.data[0]) }}" 
+                           class="btn btn-warning {% if not is_office_hours %}disabled{% endif %}"
+                           onclick="return reduceCurse(this)">
+                            -1 Küfür
+                        </a>
+                        <a href="{{ url_for('kullanici_sil', kullanici_id=kullanici.data[0]) }}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">
+                            Sil
+                        </a>
                     </div>
                 </div>
                 {% endfor %}
@@ -356,6 +493,43 @@
                 submitBtn.textContent = 'Ekleniyor...';
             });
         });
+        
+        // Küfür ekleme animasyonu
+        function addCurse(button) {
+            if (button.classList.contains('disabled')) {
+                return false;
+            }
+            
+            button.closest('.user-card').classList.add('curse-animation');
+            setTimeout(() => {
+                button.closest('.user-card').classList.remove('curse-animation');
+            }, 600);
+            
+            return true;
+        }
+        
+        // Küfür azaltma animasyonu
+        function reduceCurse(button) {
+            if (button.classList.contains('disabled')) {
+                return false;
+            }
+            
+            button.closest('.user-card').classList.add('curse-animation');
+            setTimeout(() => {
+                button.closest('.user-card').classList.remove('curse-animation');
+            }, 600);
+            
+            return true;
+        }
+        
+        // Flash mesajlarını otomatik kaldır
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.flash');
+            flashMessages.forEach(msg => {
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 3000);
     </script>
 </body>
 </html> 
