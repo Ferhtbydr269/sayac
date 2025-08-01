@@ -1,8 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import os
-import psycopg2
 from datetime import datetime
 from urllib.parse import urlparse
+
+# PostgreSQL bağlantısı için psycopg2 import
+try:
+    import psycopg2
+    PSYCOPG2_AVAILABLE = True
+except ImportError:
+    PSYCOPG2_AVAILABLE = False
+    print("Warning: psycopg2 not available, using SQLite for development")
 
 app = Flask(__name__)
 
@@ -11,7 +18,7 @@ def get_db_connection():
     # Render'da DATABASE_URL environment variable'ı olacak
     database_url = os.getenv('DATABASE_URL')
     
-    if database_url:
+    if database_url and PSYCOPG2_AVAILABLE:
         # PostgreSQL için (production)
         result = urlparse(database_url)
         conn = psycopg2.connect(
@@ -22,7 +29,7 @@ def get_db_connection():
             port=result.port
         )
     else:
-        # SQLite için (local development)
+        # SQLite için (local development veya psycopg2 yoksa)
         import sqlite3
         conn = sqlite3.connect('kufur_sayac.db')
     
@@ -34,7 +41,7 @@ def init_db():
     cursor = conn.cursor()
     
     # PostgreSQL için tablo oluşturma
-    if os.getenv('DATABASE_URL'):
+    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS kullanicilar (
                 id SERIAL PRIMARY KEY,
@@ -79,7 +86,10 @@ def kullanici_ekle():
     if isim.strip():
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO kullanicilar (isim) VALUES (%s)', (isim,))
+        if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+            cursor.execute('INSERT INTO kullanicilar (isim) VALUES (%s)', (isim,))
+        else:
+            cursor.execute('INSERT INTO kullanicilar (isim) VALUES (?)', (isim,))
         conn.commit()
         conn.close()
     return redirect(url_for('index'))
@@ -88,7 +98,10 @@ def kullanici_ekle():
 def kullanici_sil(kullanici_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM kullanicilar WHERE id = %s', (kullanici_id,))
+    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+        cursor.execute('DELETE FROM kullanicilar WHERE id = %s', (kullanici_id,))
+    else:
+        cursor.execute('DELETE FROM kullanicilar WHERE id = ?', (kullanici_id,))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
@@ -97,7 +110,10 @@ def kullanici_sil(kullanici_id):
 def kufur_ekle(kullanici_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = %s', (kullanici_id,))
+    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = %s', (kullanici_id,))
+    else:
+        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = ?', (kullanici_id,))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
@@ -106,7 +122,10 @@ def kufur_ekle(kullanici_id):
 def kufur_azalt(kullanici_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = %s AND kufur_sayisi > 0', (kullanici_id,))
+    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = %s AND kufur_sayisi > 0', (kullanici_id,))
+    else:
+        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = ? AND kufur_sayisi > 0', (kullanici_id,))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
