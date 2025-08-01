@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Küfür Sayacı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .add-user-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .add-user-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .add-user-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .add-user-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .users-section {
+            padding: 30px;
+        }
+        
+        .user-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .user-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .user-stats {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .stats-display {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .total-money {
+            font-size: 2em;
+            font-weight: bold;
+            color: #f39c12;
+        }
+        
+        .no-users {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .money-amount {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .count-badge {
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤬 Küfür Sayacı</h1>
+            <p>Her küfür 10 TL! Kim daha çok küfür ediyor?</p>
+        </div>
+        
+        <div class="add-user-section">
+            <form class="add-user-form" method="POST" action="{{ url_for('kullanici_ekle') }}">
+                <input type="text" name="isim" placeholder="Kullanıcı adını girin..." required>
+                <button type="submit" class="btn btn-primary">Kullanıcı Ekle</button>
+            </form>
+        </div>
+        
+        <div class="users-section">
+            {% if kullanicilar %}
+                {% for kullanici in kullanicilar %}
+                <div class="user-card">
+                    <div class="user-info">
+                        <div class="user-name">{{ kullanici[1] }}</div>
+                        <div class="user-stats">
+                            Küfür sayısı: <span class="count-badge">{{ kullanici[2] }}</span> | 
+                            Toplam borç: <span class="money-amount">{{ kullanici[3] }} TL</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <a href="{{ url_for('kufur_ekle', kullanici_id=kullanici[0]) }}" class="btn btn-danger">+1 Küfür</a>
+                        <a href="{{ url_for('kufur_azalt', kullanici_id=kullanici[0]) }}" class="btn btn-warning">-1 Küfür</a>
+                        <a href="{{ url_for('kullanici_sil', kullanici_id=kullanici[0]) }}" class="btn btn-danger" onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">Sil</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-users">
+                    <p>Henüz kullanıcı eklenmemiş. İlk kullanıcıyı ekleyin!</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="stats-display">
+            <div>Toplam Borç:</div>
+            <div class="total-money">{{ toplam_para }} TL</div>
+        </div>
+    </div>
+</body>
+</html> 
