@@ -37,97 +37,120 @@ def get_db_connection():
 
 def init_db():
     """Veritabanını başlatır"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # PostgreSQL için tablo oluşturma
-    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS kullanicilar (
-                id SERIAL PRIMARY KEY,
-                isim TEXT NOT NULL,
-                kufur_sayisi INTEGER DEFAULT 0,
-                toplam_para REAL DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-    else:
-        # SQLite için tablo oluşturma
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS kullanicilar (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                isim TEXT NOT NULL,
-                kufur_sayisi INTEGER DEFAULT 0,
-                toplam_para REAL DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-    
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # PostgreSQL için tablo oluşturma
+        if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS kullanicilar (
+                    id SERIAL PRIMARY KEY,
+                    isim TEXT NOT NULL,
+                    kufur_sayisi INTEGER DEFAULT 0,
+                    toplam_para REAL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+        else:
+            # SQLite için tablo oluşturma
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS kullanicilar (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    isim TEXT NOT NULL,
+                    kufur_sayisi INTEGER DEFAULT 0,
+                    toplam_para REAL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+        
+        conn.commit()
+        conn.close()
+        print("Database initialized successfully!")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM kullanicilar ORDER BY kufur_sayisi DESC')
-    kullanicilar = cursor.fetchall()
+    # Her request'te tablo var mı kontrol et
+    init_db()
     
-    # Toplam para hesaplama
-    cursor.execute('SELECT SUM(toplam_para) FROM kullanicilar')
-    toplam_para = cursor.fetchone()[0] or 0
-    
-    conn.close()
-    return render_template('index.html', kullanicilar=kullanicilar, toplam_para=toplam_para)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM kullanicilar ORDER BY kufur_sayisi DESC')
+        kullanicilar = cursor.fetchall()
+        
+        # Toplam para hesaplama
+        cursor.execute('SELECT SUM(toplam_para) FROM kullanicilar')
+        toplam_para = cursor.fetchone()[0] or 0
+        
+        conn.close()
+        return render_template('index.html', kullanicilar=kullanicilar, toplam_para=toplam_para)
+    except Exception as e:
+        print(f"Error in index: {e}")
+        return render_template('index.html', kullanicilar=[], toplam_para=0)
 
 @app.route('/kullanici_ekle', methods=['POST'])
 def kullanici_ekle():
     isim = request.form['isim']
     if isim.strip():
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
-            cursor.execute('INSERT INTO kullanicilar (isim) VALUES (%s)', (isim,))
-        else:
-            cursor.execute('INSERT INTO kullanicilar (isim) VALUES (?)', (isim,))
-        conn.commit()
-        conn.close()
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+                cursor.execute('INSERT INTO kullanicilar (isim) VALUES (%s)', (isim,))
+            else:
+                cursor.execute('INSERT INTO kullanicilar (isim) VALUES (?)', (isim,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error adding user: {e}")
     return redirect(url_for('index'))
 
 @app.route('/kullanici_sil/<int:kullanici_id>')
 def kullanici_sil(kullanici_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
-        cursor.execute('DELETE FROM kullanicilar WHERE id = %s', (kullanici_id,))
-    else:
-        cursor.execute('DELETE FROM kullanicilar WHERE id = ?', (kullanici_id,))
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+            cursor.execute('DELETE FROM kullanicilar WHERE id = %s', (kullanici_id,))
+        else:
+            cursor.execute('DELETE FROM kullanicilar WHERE id = ?', (kullanici_id,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error deleting user: {e}")
     return redirect(url_for('index'))
 
 @app.route('/kufur_ekle/<int:kullanici_id>')
 def kufur_ekle(kullanici_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
-        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = %s', (kullanici_id,))
-    else:
-        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = ?', (kullanici_id,))
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+            cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = %s', (kullanici_id,))
+        else:
+            cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi + 1, toplam_para = toplam_para + 10 WHERE id = ?', (kullanici_id,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error adding curse: {e}")
     return redirect(url_for('index'))
 
 @app.route('/kufur_azalt/<int:kullanici_id>')
 def kufur_azalt(kullanici_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
-        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = %s AND kufur_sayisi > 0', (kullanici_id,))
-    else:
-        cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = ? AND kufur_sayisi > 0', (kullanici_id,))
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+            cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = %s AND kufur_sayisi > 0', (kullanici_id,))
+        else:
+            cursor.execute('UPDATE kullanicilar SET kufur_sayisi = kufur_sayisi - 1, toplam_para = toplam_para - 10 WHERE id = ? AND kufur_sayisi > 0', (kullanici_id,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error reducing curse: {e}")
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
