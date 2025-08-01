@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Küfür Sayacı</title>
+    <title>🤬 Küfür Sayacı</title>
     <style>
         * {
             margin: 0;
@@ -15,16 +15,16 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 16px;
-            line-height: 1.6;
+            padding: 12px;
+            line-height: 1.5;
         }
         
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             overflow: hidden;
             backdrop-filter: blur(10px);
         }
@@ -32,34 +32,159 @@
         .header {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
-            padding: 24px 20px;
+            padding: 20px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            margin-bottom: 8px;
-            font-weight: 700;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: 4px;
+            font-weight: 600;
         }
         
         .header p {
-            font-size: 1rem;
+            font-size: 0.9rem;
             opacity: 0.9;
-            margin: 0;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0,0,0,0.1);
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
         }
         
         .office-hours-notice {
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px 20px;
+            background: #d4edda;
+            color: #155724;
+            padding: 8px 16px;
             text-align: center;
-            border-bottom: 1px solid #ffeaa7;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 500;
         }
         
         .office-hours-notice.closed {
             background: #f8d7da;
             color: #721c24;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding: 16px;
+            }
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            height: fit-content;
+        }
+        
+        .sidebar h3 {
+            color: #2c3e50;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+            background: white;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .leaderboard-rank {
+            font-weight: 700;
+            color: #667eea;
+            min-width: 20px;
+        }
+        
+        .leaderboard-avatar {
+            font-size: 1.2rem;
+        }
+        
+        .leaderboard-info {
+            flex: 1;
+        }
+        
+        .leaderboard-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .leaderboard-stats {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        
+        .challenge-item {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .challenge-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+        
+        .challenge-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e50;
+        }
+        
+        .challenge-xp {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .challenge-desc {
+            font-size: 0.75rem;
+            color: #6c757d;
         }
         
         .flash-messages {
@@ -98,52 +223,55 @@
         }
         
         .add-user-section {
-            padding: 20px;
             background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
         }
         
         .add-user-form {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
         
         .add-user-form input {
-            padding: 12px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
         }
         
         .add-user-form input:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        @media (max-width: 480px) {
+            .add-user-form {
+                flex-direction: column;
+            }
         }
         
         .btn {
-            padding: 12px 20px;
+            padding: 8px 12px;
             border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 44px;
             white-space: nowrap;
         }
         
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            pointer-events: none;
         }
         
         .btn-primary {
@@ -153,7 +281,6 @@
         
         .btn-primary:hover:not(:disabled) {
             background: #5a6fd8;
-            transform: translateY(-1px);
         }
         
         .btn-danger {
@@ -174,79 +301,139 @@
             background: #e67e22;
         }
         
-        .btn-stats {
-            background: #27ae60;
-            color: white;
-            margin-bottom: 16px;
-            width: 100%;
-        }
-        
-        .btn-stats:hover {
-            background: #229954;
-        }
-        
-        .users-section {
-            padding: 20px;
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 11px;
         }
         
         .user-card {
             background: white;
             border: 1px solid #e9ecef;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         
         .user-card:hover {
             border-color: #667eea;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .user-avatar {
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.1);
         }
         
         .user-info {
-            margin-bottom: 12px;
+            flex: 1;
         }
         
         .user-name {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+        }
+        
+        .user-level {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .level-progress {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+        
+        .level-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
         }
         
         .user-stats {
-            color: #6c757d;
-            font-size: 0.9rem;
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: #6c757d;
             margin-bottom: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 2px;
         }
         
         .badges {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
             margin-bottom: 8px;
         }
         
         .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
+            color: white;
         }
         
         .user-actions {
             display: flex;
+            gap: 6px;
             flex-wrap: wrap;
-            gap: 8px;
+        }
+        
+        .avatar-selector {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+        
+        .avatar-option {
+            font-size: 1.2rem;
+            padding: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .avatar-option:hover {
+            background: #f8f9fa;
         }
         
         .stats-display {
@@ -388,7 +575,22 @@
     <div class="container">
         <div class="header">
             <h1>🤬 Küfür Sayacı</h1>
-            <p>Her küfür 10 TL! Kim daha çok küfür ediyor?</p>
+            <p>Her küfür 10 TL! Seviye atla, rozet kazan!</p>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value">{{ toplam_para }}</div>
+                    <div class="stat-label">Toplam Borç (TL)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ kullanicilar|length }}</div>
+                    <div class="stat-label">Aktif Kullanıcı</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ leaderboard|length }}</div>
+                    <div class="stat-label">Leaderboard</div>
+                </div>
+            </div>
         </div>
         
         <div class="office-hours-notice {% if not is_office_hours %}closed{% endif %}">
@@ -409,118 +611,144 @@
             {% endif %}
         {% endwith %}
         
-        <div class="add-user-section">
-            <form class="add-user-form" method="POST" action="{{ url_for('kullanici_ekle') }}">
-                <input type="text" name="isim" placeholder="Kullanıcı adını girin..." required>
-                <button type="submit" class="btn btn-primary">Kullanıcı Ekle</button>
-            </form>
-        </div>
-        
-        <div class="users-section">
-            <a href="{{ url_for('stats') }}" class="btn btn-stats">📊 İstatistikler</a>
+        <div class="main-content">
+            <div class="users-section">
+                <div class="add-user-section">
+                    <form class="add-user-form" method="POST" action="{{ url_for('kullanici_ekle') }}">
+                        <input type="text" name="isim" placeholder="Yeni kullanıcı adı..." required>
+                        <button type="submit" class="btn btn-primary">➕ Ekle</button>
+                    </form>
+                </div>
             
-            {% if kullanicilar %}
-                {% for kullanici in kullanicilar %}
-                <div class="user-card">
-                    <div class="user-info">
-                        <div class="user-name">{{ kullanici.data[1] }}</div>
+                {% if kullanicilar %}
+                    {% for kullanici in kullanicilar %}
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div class="user-avatar" onclick="toggleAvatarSelector({{ kullanici.data[0] }})">
+                                {{ kullanici.data[6] }}
+                                <div class="avatar-selector" id="avatar-{{ kullanici.data[0] }}">
+                                    {% for avatar in ['😊', '😎', '🤓', '😇', '🤔', '😴', '🤯', '🥳', '🤠', '🤖', '👻', '🎭', '🦄', '🐱', '🐶', '🦊'] %}
+                                    <div class="avatar-option" onclick="changeAvatar({{ kullanici.data[0] }}, '{{ avatar }}')">{{ avatar }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">{{ kullanici.data[1] }}</div>
+                                <div class="user-level">
+                                    {{ kullanici.level_info.icon }} Level {{ kullanici.level_info.level }} - {{ kullanici.level_info.name }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="level-progress">
+                            <div class="level-progress-bar" style="width: {{ kullanici.level_info.progress }}%"></div>
+                        </div>
+                        
                         <div class="user-stats">
-                            <span>Küfür: <span class="count-badge">{{ kullanici.data[2] }}</span></span>
-                            <span>Borç: <span class="money-amount">{{ kullanici.data[3] }} TL</span></span>
+                            <div class="stat-item">🤬 {{ kullanici.data[2] }}</div>
+                            <div class="stat-item">💰 {{ kullanici.data[3] }} TL</div>
+                            <div class="stat-item">⭐ {{ kullanici.data[4] }} XP</div>
+                            <div class="stat-item">🔥 {{ kullanici.data[7] }} streak</div>
                         </div>
                         
                         {% if kullanici.badges %}
                         <div class="badges">
                             {% for badge in kullanici.badges %}
-                            <div class="badge" style="background-color: {{ badge.color }}; color: white;">
+                            <div class="badge" style="background-color: {{ badge.color }};">
                                 {{ badge.icon }} {{ badge.name }}
                             </div>
                             {% endfor %}
                         </div>
                         {% endif %}
+                        
+                        <div class="user-actions">
+                            <a href="{{ url_for('kufur_ekle', kullanici_id=kullanici.data[0]) }}" 
+                               class="btn btn-danger {% if not is_office_hours %}disabled{% endif %}">
+                                +1 Küfür
+                            </a>
+                            <a href="{{ url_for('kufur_azalt', kullanici_id=kullanici.data[0]) }}" 
+                               class="btn btn-warning {% if not is_office_hours %}disabled{% endif %}">
+                                -1 Küfür
+                            </a>
+                            <a href="{{ url_for('kullanici_sil', kullanici_id=kullanici.data[0]) }}" 
+                               class="btn btn-danger btn-small"
+                               onclick="return confirm('{{ kullanici.data[1] }} kullanıcısını silmek istediğinizden emin misiniz?')">
+                                🗑️
+                            </a>
+                        </div>
                     </div>
-                    <div class="user-actions">
-                        <a href="{{ url_for('kufur_ekle', kullanici_id=kullanici.data[0]) }}" 
-                           class="btn btn-danger {% if not is_office_hours %}disabled{% endif %}"
-                           onclick="return addCurse(this)">
-                            +1 Küfür
-                        </a>
-                        <a href="{{ url_for('kufur_azalt', kullanici_id=kullanici.data[0]) }}" 
-                           class="btn btn-warning {% if not is_office_hours %}disabled{% endif %}"
-                           onclick="return reduceCurse(this)">
-                            -1 Küfür
-                        </a>
-                        <a href="{{ url_for('kullanici_sil', kullanici_id=kullanici.data[0]) }}" 
-                           class="btn btn-danger"
-                           onclick="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')">
-                            Sil
-                        </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-users">
+                        <p>🎯 Henüz kullanıcı yok. İlk kullanıcıyı ekleyin!</p>
                     </div>
+                {% endif %}
+            </div>
+            
+            <div class="sidebar">
+                <h3>🏆 Leaderboard</h3>
+                {% if leaderboard %}
+                    {% for user in leaderboard[:5] %}
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank">{{ loop.index }}</div>
+                        <div class="leaderboard-avatar">{{ user[5] }}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">{{ user[0] }}</div>
+                            <div class="leaderboard-stats">Level {{ user[4] }} • {{ user[3] }} XP</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #6c757d; font-size: 0.8rem;">Henüz veri yok</p>
+                {% endif %}
+                
+                <h3 style="margin-top: 20px;">🎯 Günlük Challengelar</h3>
+                {% for challenge in daily_challenges %}
+                <div class="challenge-item">
+                    <div class="challenge-header">
+                        <span>{{ challenge.icon }}</span>
+                        <span class="challenge-name">{{ challenge.name }}</span>
+                        <span class="challenge-xp">+{{ challenge.xp }} XP</span>
+                    </div>
+                    <div class="challenge-desc">{{ challenge.desc }}</div>
                 </div>
                 {% endfor %}
-            {% else %}
-                <div class="no-users">
-                    <p>Henüz kullanıcı eklenmemiş. İlk kullanıcıyı ekleyin!</p>
-                </div>
-            {% endif %}
-        </div>
-        
-        <div class="stats-display">
-            <div>Toplam Borç</div>
-            <div class="total-money">{{ toplam_para }} TL</div>
+                
+                <a href="{{ url_for('stats') }}" class="btn btn-primary" style="width: 100%; margin-top: 16px;">
+                    📊 Detaylı İstatistikler
+                </a>
+            </div>
         </div>
     </div>
     
     <script>
-        // Smooth interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Button click animations
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    this.classList.add('success');
-                    setTimeout(() => {
-                        this.classList.remove('success');
-                    }, 600);
+        // Avatar selector toggle
+        function toggleAvatarSelector(userId) {
+            const selector = document.getElementById(`avatar-${userId}`);
+            const allSelectors = document.querySelectorAll('.avatar-selector');
+            
+            // Diğerlerini kapat
+            allSelectors.forEach(s => {
+                if (s !== selector) s.style.display = 'none';
+            });
+            
+            // Bu selector'ı aç/kapat
+            selector.style.display = selector.style.display === 'grid' ? 'none' : 'grid';
+        }
+        
+        // Avatar değiştir
+        function changeAvatar(userId, avatar) {
+            window.location.href = `/change_avatar/${userId}/${avatar}`;
+        }
+        
+        // Dışarı tıklandığında avatar selector'ları kapat
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-avatar')) {
+                document.querySelectorAll('.avatar-selector').forEach(s => {
+                    s.style.display = 'none';
                 });
-            });
-            
-            // Form submission loading
-            const form = document.querySelector('.add-user-form');
-            form.addEventListener('submit', function() {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.classList.add('loading');
-                submitBtn.textContent = 'Ekleniyor...';
-            });
+            }
         });
-        
-        // Küfür ekleme animasyonu
-        function addCurse(button) {
-            if (button.classList.contains('disabled')) {
-                return false;
-            }
-            
-            button.closest('.user-card').classList.add('curse-animation');
-            setTimeout(() => {
-                button.closest('.user-card').classList.remove('curse-animation');
-            }, 600);
-            
-            return true;
-        }
-        
-        // Küfür azaltma animasyonu
-        function reduceCurse(button) {
-            if (button.classList.contains('disabled')) {
-                return false;
-            }
-            
-            button.closest('.user-card').classList.add('curse-animation');
-            setTimeout(() => {
-                button.closest('.user-card').classList.remove('curse-animation');
-            }, 600);
-            
-            return true;
-        }
         
         // Flash mesajlarını otomatik kaldır
         setTimeout(() => {
@@ -529,7 +757,14 @@
                 msg.style.opacity = '0';
                 setTimeout(() => msg.remove(), 300);
             });
-        }, 3000);
+        }, 4000);
+        
+        // Form submission feedback
+        document.querySelector('.add-user-form').addEventListener('submit', function() {
+            const btn = this.querySelector('button');
+            btn.textContent = '⏳ Ekleniyor...';
+            btn.disabled = true;
+        });
     </script>
 </body>
 </html> 
