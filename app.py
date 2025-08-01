@@ -47,30 +47,45 @@ def is_office_hours():
 
 def get_user_stats():
     """Kullanıcı istatistiklerini hesaplar"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Haftalık istatistikler
-    week_ago = datetime.now() - timedelta(days=7)
-    cursor.execute('''
-        SELECT kullanici_id, COUNT(*) as haftalik_kufur 
-        FROM kufur_gecmisi 
-        WHERE tarih >= %s 
-        GROUP BY kullanici_id
-    ''', (week_ago,))
-    haftalik_stats = cursor.fetchall()
-    
-    # En çok küfür edenler
-    cursor.execute('''
-        SELECT k.isim, k.kufur_sayisi, k.toplam_para 
-        FROM kullanicilar k 
-        ORDER BY k.kufur_sayisi DESC 
-        LIMIT 5
-    ''')
-    top_kullanicilar = cursor.fetchall()
-    
-    conn.close()
-    return haftalik_stats, top_kullanicilar
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Haftalık istatistikler - kufur_gecmisi tablosu yoksa boş liste döndür
+        try:
+            week_ago = datetime.now() - timedelta(days=7)
+            if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+                cursor.execute('''
+                    SELECT kullanici_id, COUNT(*) as haftalik_kufur 
+                    FROM kufur_gecmisi 
+                    WHERE tarih >= %s 
+                    GROUP BY kullanici_id
+                ''', (week_ago,))
+            else:
+                cursor.execute('''
+                    SELECT kullanici_id, COUNT(*) as haftalik_kufur 
+                    FROM kufur_gecmisi 
+                    WHERE tarih >= ? 
+                    GROUP BY kullanici_id
+                ''', (week_ago,))
+            haftalik_stats = cursor.fetchall()
+        except:
+            haftalik_stats = []
+        
+        # En çok küfür edenler
+        cursor.execute('''
+            SELECT k.isim, k.kufur_sayisi, k.toplam_para 
+            FROM kullanicilar k 
+            ORDER BY k.kufur_sayisi DESC 
+            LIMIT 5
+        ''')
+        top_kullanicilar = cursor.fetchall()
+        
+        conn.close()
+        return haftalik_stats, top_kullanicilar
+    except Exception as e:
+        print(f"Error in get_user_stats: {e}")
+        return [], []
 
 def calculate_badges(kufur_sayisi, toplam_para):
     """Başarı rozetlerini hesaplar"""
@@ -157,12 +172,16 @@ def index():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Kullanıcıları getir
         cursor.execute('SELECT * FROM kullanicilar ORDER BY kufur_sayisi DESC')
         kullanicilar = cursor.fetchall()
+        print(f"Bulunan kullanıcılar: {kullanicilar}")
         
         # Toplam para hesaplama
         cursor.execute('SELECT SUM(toplam_para) FROM kullanicilar')
         toplam_para = cursor.fetchone()[0] or 0
+        print(f"Toplam para: {toplam_para}")
         
         # İstatistikler
         haftalik_stats, top_kullanicilar = get_user_stats()
@@ -175,6 +194,8 @@ def index():
                 'data': kullanici,
                 'badges': badges
             })
+        
+        print(f"Rozetlerle kullanıcılar: {len(kullanicilar_with_badges)}")
         
         conn.close()
         
@@ -196,20 +217,38 @@ def index():
 @app.route('/kullanici_ekle', methods=['POST'])
 def kullanici_ekle():
     isim = request.form['isim']
+    print(f"Kullanıcı ekleme isteği: {isim}")
+    
     if isim.strip():
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
+            
+            # Kullanıcıyı ekle
             if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
                 cursor.execute('INSERT INTO kullanicilar (isim) VALUES (%s)', (isim,))
             else:
                 cursor.execute('INSERT INTO kullanicilar (isim) VALUES (?)', (isim,))
+            
             conn.commit()
+            
+            # Eklenen kullanıcıyı kontrol et
+            if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+                cursor.execute('SELECT * FROM kullanicilar WHERE isim = %s', (isim,))
+            else:
+                cursor.execute('SELECT * FROM kullanicilar WHERE isim = ?', (isim,))
+            
+            eklenen_kullanici = cursor.fetchone()
+            print(f"Eklenen kullanıcı: {eklenen_kullanici}")
+            
             conn.close()
-            flash('Kullanıcı başarıyla eklendi!', 'success')
+            flash(f'Kullanıcı "{isim}" başarıyla eklendi!', 'success')
         except Exception as e:
             print(f"Error adding user: {e}")
-            flash('Kullanıcı eklenirken hata oluştu!', 'error')
+            flash(f'Kullanıcı eklenirken hata oluştu: {e}', 'error')
+    else:
+        flash('Kullanıcı adı boş olamaz!', 'error')
+    
     return redirect(url_for('index'))
 
 @app.route('/kullanici_sil/<int:kullanici_id>')
@@ -288,15 +327,27 @@ def stats():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Haftalık trend
-        cursor.execute('''
-            SELECT DATE(tarih) as gun, COUNT(*) as kufur_sayisi
-            FROM kufur_gecmisi 
-            WHERE tarih >= DATE('now', '-7 days')
-            GROUP BY DATE(tarih)
-            ORDER BY gun
-        ''')
-        haftalik_trend = cursor.fetchall()
+        # Haftalık trend - kufur_gecmisi tablosu yoksa boş liste döndür
+        try:
+            if os.getenv('DATABASE_URL') and PSYCOPG2_AVAILABLE:
+                cursor.execute('''
+                    SELECT DATE(tarih) as gun, COUNT(*) as kufur_sayisi
+                    FROM kufur_gecmisi 
+                    WHERE tarih >= DATE('now', '-7 days')
+                    GROUP BY DATE(tarih)
+                    ORDER BY gun
+                ''')
+            else:
+                cursor.execute('''
+                    SELECT DATE(tarih) as gun, COUNT(*) as kufur_sayisi
+                    FROM kufur_gecmisi 
+                    WHERE tarih >= DATE('now', '-7 days')
+                    GROUP BY DATE(tarih)
+                    ORDER BY gun
+                ''')
+            haftalik_trend = cursor.fetchall()
+        except:
+            haftalik_trend = []
         
         # En çok küfür edenler
         cursor.execute('''
